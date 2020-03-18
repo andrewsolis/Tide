@@ -323,16 +323,12 @@ void DisplayGroupController::_showFullscreen(WindowPtr window,
     window->getContent().setCaptureInteraction(false);
     _group.setFullscreenWindow(window);
 
-    #if TIDE_ENABLE_MOVIE_SUPPORT
-
     if (window->getContent().getType() == ContentType::movie &&
         _options->getPlayOnMaximize())
     {
         auto& content = static_cast<MovieContent&>(window->getContent());
         content.play();
     }
-
-    #endif
 }
 
 qreal DisplayGroupController::_estimateAspectRatio() const
