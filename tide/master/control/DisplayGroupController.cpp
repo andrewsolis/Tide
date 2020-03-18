@@ -45,6 +45,7 @@
 #include "scene/MovieContent.h"
 #include "scene/Options.h"
 #include "scene/Window.h"
+#include "scene/ContentType.h"
 
 #include <QTransform>
 
