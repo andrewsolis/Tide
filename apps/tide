@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 """
 Launcher for Tide
 Usage: ./tide --help
@@ -123,6 +123,8 @@ parser.add_argument("--printcmd", help="Print the command without executing it",
                     action="store_true")
 parser.add_argument("--vglrun", help="Run the main application using vglrun (override VirtualGL detection)",
                     action="store_true")
+parser.add_argument("--decode-threads", help="Number of threads for ffmpeg video decoding", type=int)
+
 args = parser.parse_args()
 
 # Tide directory; this is the parent directory of this script
@@ -234,7 +236,7 @@ try:
     if MPI_GLOBAL_HOST_LIST:
         hostlist.append(config.master.host) # master
         forker_host = config.master.host    # forker goes at the end of hostlist
-
+    
     # workaround for exporting required QT params
     qppp = os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"]
     export_qtp = EXPORT_ENV_VAR.format( 'QT_QPA_PLATFORM_PLUGIN_PATH', qppp )
@@ -256,6 +258,7 @@ try:
     masterexec = '%s%s %s' % (VGLRUN_BIN, TIDEMASTER_BIN, TIDE_PARAMS)
     mastercmd = '%s -np 1 %s' % (environment, masterexec)
     runcommands.append(mastercmd)
+
     # add the wall commands
     for wall in config.walls:
         export_display = EXPORT_ENV_VAR.format('DISPLAY', wall.displays[0])
@@ -273,15 +276,17 @@ try:
         if MPI_GLOBAL_HOST_LIST:
             hostlist.append(wall.host)
 
-
         # workaround for exporting required QT params
         qppp = os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"]
         export_qtp = EXPORT_ENV_VAR.format( 'QT_QPA_PLATFORM_PLUGIN_PATH', qppp )
         qml2ip = os.environ['QML2_IMPORT_PATH']
         export_qml = EXPORT_ENV_VAR.format( 'QML2_IMPORT_PATH', qml2ip )
 
-
         env_vars = [MPI_SPECIAL_FLAGS, export_display,export_qtp, export_qml, node_host]
+
+        if args.decode_threads:
+            env_vars += [EXPORT_ENV_VAR.format('TIDE_FFMPEG_THREADS', args.decode_threads)]
+
         environment = ' '.join(env_vars)
         wallcmd = '%s -np 1 %s' % (environment, TIDEWALL_BIN)
         runcommands.append(wallcmd)
